@@ -3,13 +3,14 @@ on:
     branches:
       - main
   workflow_dispatch:
+
 jobs:
   run_pull:
-    name: run pull
+    name: Run Pull and Build
     runs-on: ubuntu-latest
 
     steps:
-      - name: executing remote ssh commands using ssh key
+      - name: Execute remote SSH commands using SSH key
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -17,12 +18,33 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            export NVM_DIR=~/.nvm
-            source ~/.nvm/nvm.sh 
-            cd ${{ secrets.WORK_DIR }} 
-            git fetch 
-            git checkout ${{ secrets.MAIN_BRANCH }} 
-            git pull 
-            npm install 
-            npm run build 
+            # Verificar si NVM está instalado
+            if [ ! -d "$HOME/.nvm" ]; then
+              echo "NVM no está instalado. Instalando..."
+              curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+              export NVM_DIR="$HOME/.nvm"
+              source ~/.nvm/nvm.sh
+            else
+              source ~/.nvm/nvm.sh
+            fi
+
+            # Navegar al directorio de trabajo
+            mkdir -p ${{ secrets.WORK_DIR }}
+            cd ${{ secrets.WORK_DIR }}
+
+            # Verificar si el repositorio está clonado
+            if [ ! -d ".git" ]; then
+              echo "Clonando el repositorio..."
+              git clone git@github.com:${{ secrets.GITHUB_REPOSITORY }} ${{ secrets.WORK_DIR }}
+              cd ${{ secrets.WORK_DIR }}
+            fi
+
+            # Actualizar el repositorio
+            git fetch
+            git checkout ${{ secrets.MAIN_BRANCH }}
+            git pull origin ${{ secrets.MAIN_BRANCH }}
+
+            # Instalar dependencias y construir
+            npm install
+            npm run build
             exit
