@@ -24,7 +24,7 @@ jobs:
 
     - name: Build the Angular app
       run: |
-        npm run build --configuration production
+        npm run build --configuration
 
     - name: Set up SSH key
       run: |
