@@ -1,3 +1,5 @@
+name: Deploy to VPS
+
 on:
   push:
     branches:
@@ -10,7 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Execute remote SSH commands using SSH key
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Executing remote SSH commands using SSH key
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -35,16 +40,24 @@ jobs:
             # Verificar si el repositorio está clonado
             if [ ! -d ".git" ]; then
               echo "Clonando el repositorio..."
-              git clone git@github.com:${{ secrets.GITHUB_REPOSITORY }} ${{ secrets.WORK_DIR }}
-              cd ${{ secrets.WORK_DIR }}
+              git clone git@github.com:Nicovied0/CrediCar.git .  # Clonando el repositorio
+            else
+              echo "El repositorio ya está clonado, actualizando..."
             fi
 
-            # Actualizar el repositorio
-            git fetch
-            git checkout ${{ secrets.MAIN_BRANCH }}
-            git pull origin ${{ secrets.MAIN_BRANCH }}
+            # Asegurarse de estar en la rama correcta (main)
+            git checkout main  # Cambiar a la rama main
+            git pull origin main  # Obtener los últimos cambios de la rama main
 
-            # Instalar dependencias y construir
-            npm install
-            npm run build
+            # Verificar si package.json existe antes de ejecutar npm
+            if [ -f "package.json" ]; then
+              echo "Instalando dependencias..."
+              npm install
+              echo "Construyendo la aplicación..."
+              npm run build
+            else
+              echo "package.json no encontrado, abortando ejecución."
+              exit 1
+            fi
+
             exit
