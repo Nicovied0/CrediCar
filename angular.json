@@ -25,7 +25,6 @@
               "primeng/resources/primeng.min.css",
               "primeicons/primeicons.css"
             ],
-
             "scripts": []
           },
           "configurations": {
@@ -42,7 +41,16 @@
                   "maximumError": "4kb"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "sourceMap": false,
+              "optimization": true,
+              "extractCss": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
             },
             "development": {
               "buildOptimizer": false,
