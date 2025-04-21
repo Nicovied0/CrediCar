@@ -1,63 +1,76 @@
-name: Deploy to VPS
+name: Deploy Angular App to VPS
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  run_pull:
-    name: Run Pull and Build
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Executing remote SSH commands using SSH key
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            # Verificar si NVM está instalado
-            if [ ! -d "$HOME/.nvm" ]; then
-              echo "NVM no está instalado. Instalando..."
-              curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-              export NVM_DIR="$HOME/.nvm"
-              source ~/.nvm/nvm.sh
-            else
-              source ~/.nvm/nvm.sh
-            fi
+    - name: Set up SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
 
-            # Navegar al directorio de trabajo
-            mkdir -p ${{ secrets.WORK_DIR }}
-            cd ${{ secrets.WORK_DIR }}
+    - name: Add known hosts
+      run: |
+        ssh-keyscan -p 5680 -H 149.50.146.48 >> ~/.ssh/known_hosts
 
-            # Verificar si el repositorio está clonado
-            if [ ! -d ".git" ]; then
-              echo "Clonando el repositorio..."
-              git clone git@github.com:Nicovied0/CrediCar.git .  # Clonando el repositorio
-            else
-              echo "El repositorio ya está clonado, actualizando..."
-            fi
+    - name: Deploy via SSH
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 5680 root@149.50.146.48 "
+          # Configurar SSH para GitHub si no está
+          if [ ! -f ~/.ssh/config ]; then
+            echo 'Host github.com' > ~/.ssh/config
+            echo '  HostName github.com' >> ~/.ssh/config
+            echo '  User git' >> ~/.ssh/config
+            echo '  IdentityFile ~/.ssh/id_rsa' >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
+          fi
 
-            # Asegurarse de estar en la rama correcta (main)
-            git checkout main  # Cambiar a la rama main
-            git pull origin main  # Obtener los últimos cambios de la rama main
+          # Instalar NVM si no está
+          if [ ! -d \"$HOME/.nvm\" ]; then
+            echo 'Instalando NVM...'
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+          fi
+          export NVM_DIR=\"$HOME/.nvm\"
+          [ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"
 
-            # Verificar si package.json existe antes de ejecutar npm
-            if [ -f "package.json" ]; then
-              echo "Instalando dependencias..."
-              npm install
-              echo "Construyendo la aplicación..."
-              npm run build
-            else
-              echo "package.json no encontrado, abortando ejecución."
-              exit 1
-            fi
+          # Usar Node 18 (o la versión que uses)
+          nvm install 18
+          nvm use 18
 
-            exit
+          # Clonar o actualizar repo
+          mkdir -p /home/root/mis-proyectos/credi-car
+          cd /home/root/mis-proyectos/credi-car
+
+          if [ ! -d .git ]; then
+            echo 'Clonando repositorio...'
+            git clone git@github.com:Nicovied0/CrediCar.git .
+          else
+            echo 'Repositorio ya existe, actualizando...'
+            git pull origin main
+          fi
+
+          # Instalar dependencias
+          if [ -f package.json ]; then
+            echo 'Instalando dependencias...'
+            npm install
+          else
+            echo 'package.json no encontrado, abortando.'
+            exit 1
+          fi
+
+          # Build de Angular
+          echo 'Buildeando app...'
+          npm run build --prod
+
+          echo 'Deploy terminado.'
+        "
