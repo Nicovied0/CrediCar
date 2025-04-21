@@ -26,24 +26,15 @@ jobs:
     - name: Deploy via SSH
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 5680 root@149.50.146.48 "
-          # Configurar SSH para GitHub si no está
-          if [ ! -f ~/.ssh/config ]; then
-            echo 'Host github.com' > ~/.ssh/config
-            echo '  HostName github.com' >> ~/.ssh/config
-            echo '  User git' >> ~/.ssh/config
-            echo '  IdentityFile ~/.ssh/id_rsa' >> ~/.ssh/config
-            chmod 600 ~/.ssh/config
-          fi
-
           # Instalar NVM si no está
-          if [ ! -d \"$HOME/.nvm\" ]; then
+          if [ ! -d \"\$HOME/.nvm\" ]; then
             echo 'Instalando NVM...'
             curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
           fi
-          export NVM_DIR=\"$HOME/.nvm\"
-          [ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"
+          export NVM_DIR=\"\$HOME/.nvm\"
+          [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"
 
-          # Usar Node 18 (o la versión que uses)
+          # Usar Node 18
           nvm install 18
           nvm use 18
 
@@ -53,7 +44,7 @@ jobs:
 
           if [ ! -d .git ]; then
             echo 'Clonando repositorio...'
-            git clone git@github.com:Nicovied0/CrediCar.git .
+            git clone https://github.com/Nicovied0/CrediCar.git .
           else
             echo 'Repositorio ya existe, actualizando...'
             git pull origin main
@@ -70,7 +61,7 @@ jobs:
 
           # Build de Angular
           echo 'Buildeando app...'
-          npm run build --prod
+          npx ng build --configuration production
 
           echo 'Deploy terminado.'
         "
