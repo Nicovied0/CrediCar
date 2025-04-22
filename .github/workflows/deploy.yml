@@ -1,47 +1,47 @@
-name: Deploy Angular App to VPS
+# name: Deploy Angular App to VPS
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  build_and_deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   build_and_deploy:
+#     runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+#     - name: Set up Node.js
+#       uses: actions/setup-node@v3
+#       with:
+#         node-version: '18'
 
-    - name: Install dependencies
-      run: |
-        npm install --legacy-peer-deps
+#     - name: Install dependencies
+#       run: |
+#         npm install --legacy-peer-deps
 
-    - name: Build the Angular app
-      run: |
-        npm run build
+#     - name: Build the Angular app
+#       run: |
+#         npm run build
 
-    - name: Set up SSH key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+#     - name: Set up SSH key
+#       run: |
+#         mkdir -p ~/.ssh
+#         echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+#         chmod 600 ~/.ssh/id_rsa
 
-    - name: Add known hosts
-      run: |
-        ssh-keyscan -p 5680 -H 149.50.146.48 >> ~/.ssh/known_hosts
+#     - name: Add known hosts
+#       run: |
+#         ssh-keyscan -p 5680 -H 149.50.146.48 >> ~/.ssh/known_hosts
 
-    - name: Deploy via SCP
-      run: |
-        scp -r -P 5680 ./dist/credi-car/* root@149.50.146.48:/home/root/mis-proyectos/credi-car/dist/
+#     - name: Deploy via SCP
+#       run: |
+#         scp -r -P 5680 ./dist/credi-car/* root@149.50.146.48:/home/root/mis-proyectos/credi-car/dist/
 
-    - name: Restart Nginx (optional, if using nginx for serving)
-      run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 5680 root@149.50.146.48 "
-          sudo systemctl restart nginx
-        "
+#     - name: Restart Nginx (optional, if using nginx for serving)
+#       run: |
+#         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 5680 root@149.50.146.48 "
+#           sudo systemctl restart nginx
+#         "
