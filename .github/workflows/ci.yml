@@ -1,37 +1,37 @@
-name: Build Angular 17 + PrimeNG 17 Project
+# name: Build Angular 17 + PrimeNG 17 Project
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+#       - name: Setup Node.js 20
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: '20'
 
-      - name: Install dependencies
-        run: npm ci  # npm ci es mejor para CI/CD porque usa package-lock.json
+#       - name: Install dependencies
+#         run: npm ci  # npm ci es mejor para CI/CD porque usa package-lock.json
 
-      - name: Check Angular CLI version
-        run: npx ng version
+#       - name: Check Angular CLI version
+#         run: npx ng version
 
-      - name: Build Angular project
-        run: npx ng build --configuration=production
+#       - name: Build Angular project
+#         run: npx ng build --configuration=production
 
-      - name: Upload dist folder
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
+#       - name: Upload dist folder
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: dist
+#           path: dist/
