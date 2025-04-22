@@ -1,31 +1,40 @@
 name: Build Angular 16 + PrimeNG 17 Project
 
 on:
-  workflow_dispatch: # Permite ejecutar manualmente el workflow desde GitHub Actions
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Paso 1: Configurar Node.js
+      # Configurar Node.js
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # Paso 2: Instalar dependencias
+      # Verificar versión de npm
+      - name: Check npm version
+        run: npm --version
+
+      # Instalar dependencias
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      # Paso 3: Construir el proyecto Angular
+      # Construir el proyecto Angular
       - name: Build Angular project
         run: npx ng build --configuration=production
 
-      # Paso 4: Subir la carpeta dist como artefacto
+      # Subir la carpeta dist como artefacto
       - name: Upload dist folder
         uses: actions/upload-artifact@v4
         with:
           name: Angular-Build
           path: dist/
-          retention-days: 90 # Opcional: Retener el artefacto por 90 días
