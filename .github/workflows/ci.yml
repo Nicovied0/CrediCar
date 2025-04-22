@@ -1,12 +1,6 @@
 name: Build Angular 16 + PrimeNG 17 Project
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch: # Permite ejecutar manualmente el workflow desde GitHub Actions
 
 jobs:
@@ -14,31 +8,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Paso 1: Checkout del repositorio
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # Paso 2: Configuración de Node.js
+      # Paso 1: Configurar Node.js
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # Paso 3: Instalación de dependencias
+      # Paso 2: Instalar dependencias
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps # npm ci es mejor para CI/CD porque usa package-lock.json
+        run: npm ci --legacy-peer-deps
 
-      # Paso 4: Verificar la versión de Angular CLI
-      - name: Check Angular CLI version
-        run: npx ng version
-
-      # Paso 5: Construcción del proyecto Angular
+      # Paso 3: Construir el proyecto Angular
       - name: Build Angular project
         run: npx ng build --configuration=production
 
-      # Paso 6: Subir la carpeta dist como artefacto
+      # Paso 4: Subir la carpeta dist como artefacto
       - name: Upload dist folder
         uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: Angular-Build
           path: dist/
+          retention-days: 90 # Opcional: Retener el artefacto por 90 días
